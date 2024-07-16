@@ -1,6 +1,10 @@
-// oneko.js: https://github.com/adryd325/oneko.js
-
 (function oneko() {
+  const isReducedMotion =
+    window.matchMedia(`(prefers-reduced-motion: reduce)`) === true ||
+    window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
+
+  if (isReducedMotion) return;
+
   const nekoEl = document.createElement("div");
 
   let nekoPosX = 32;
@@ -8,14 +12,6 @@
 
   let mousePosX = 0;
   let mousePosY = 0;
-
-  const isReducedMotion =
-    window.matchMedia(`(prefers-reduced-motion: reduce)`) === true ||
-    window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
-  
-  if (isReducedMotion) {
-    return;
-  }
 
   let frameCount = 0;
   let idleTime = 0;
@@ -93,11 +89,17 @@
     nekoEl.style.height = "32px";
     nekoEl.style.position = "fixed";
     nekoEl.style.pointerEvents = "none";
-    nekoEl.style.backgroundImage = "url('./oneko.gif')";
     nekoEl.style.imageRendering = "pixelated";
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
     nekoEl.style.zIndex = Number.MAX_VALUE;
+
+    let nekoFile = "./oneko.gif";
+    const curScript = document.currentScript;
+    if (curScript && curScript.dataset.cat) {
+      nekoFile = curScript.dataset.cat;
+    }
+    nekoEl.style.backgroundImage = `url(${nekoFile})`;
 
     document.body.appendChild(nekoEl);
 
@@ -105,13 +107,13 @@
       mousePosX = event.clientX;
       mousePosY = event.clientY;
     });
-    
-    window.requestAnimationFrame(onAnimatonFrame);
+
+    window.requestAnimationFrame(onAnimationFrame);
   }
 
   let lastFrameTimestamp;
 
-  function onAnimatonFrame(timestamp) {
+  function onAnimationFrame(timestamp) {
     // Stops execution if the neko element is removed from DOM
     if (!nekoEl.isConnected) {
       return;
@@ -119,11 +121,11 @@
     if (!lastFrameTimestamp) {
       lastFrameTimestamp = timestamp;
     }
-    if (timestamp - lastFrameTimestamp > 100) {
-      lastFrameTimestamp = timestamp
-      frame()
+    if (timestamp - lastFrameTimestamp > 50) { // Change interval to 50ms for faster frames
+      lastFrameTimestamp = timestamp;
+      frame();
     }
-    window.requestAnimationFrame(onAnimatonFrame);
+    window.requestAnimationFrame(onAnimationFrame);
   }
 
   function setSprite(name, frame) {
